@@ -96,11 +96,15 @@ async function importPhotos(oAuth2Client) {
         googleAlbum = createAlbumRes.data;
       }
 
-      const photoChunks = _.chunk(flickrAlbum.photos, 5);
-      for (const photoChunk of photoChunks) {
-        await Promise.all(photoChunk.map(photoId => uploadPhoto(oAuth2Client, photoId, googleAlbum.id)));
+      if (parseInt(googleAlbum.mediaItemsCount, 10) === flickrAlbum.photos.length) {
+        console.log(`All ${googleAlbum.mediaItemsCount} items already imported to ${googleAlbum.title}`)
+      } else {
+        const photoChunks = _.chunk(flickrAlbum.photos, 5);
+        for (const photoChunk of photoChunks) {
+          await Promise.all(photoChunk.map(photoId => uploadPhoto(oAuth2Client, photoId, googleAlbum.id)));
+        }
+        console.log(`Completed import for ${flickrAlbum.title}`);
       }
-      console.log(`Completed import for ${flickrAlbum.title}`);
     }
   } catch (err) {
     console.log(err.stack);
