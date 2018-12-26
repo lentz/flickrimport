@@ -1,6 +1,5 @@
 const { readFileSync } = require('fs');
 const glob = require('glob');
-const debug = require('debug')('flickrimport');
 const path = require('path');
 const _ = require('lodash');
 require('dotenv').config();
@@ -28,12 +27,12 @@ async function uploadPhoto(oAuth2Client, flickrPhotoId, albumId) {
   try {
     const files = glob.sync(path.join(process.env.PHOTOS_DIR, `*${flickrPhotoId}*.jpg`));
     if (!files.length) { 
-      console.error(`Photo not found with ID ${flickrPhotoId} for album ${albumId}!`);
+      console.log(`Photo not found with ID ${flickrPhotoId} for album ${albumId}!`);
       return;
     }
     const photoPath = files[0];
 
-    debug(`Uploading ${path.basename(photoPath)}`);
+    console.log(`Uploading ${path.basename(photoPath)}`);
 
     const uploadRes = await oAuth2Client.request({
       url: 'https://photoslibrary.googleapis.com/v1/uploads',
@@ -74,21 +73,21 @@ async function getAlbums(oAuth2Client) {
     pageToken = albumsRes.data.nextPageToken;
   } while (pageToken);
   
-  debug(`Found ${albums.length} Google albums`);
+  console.log(`Found ${albums.length} Google albums`);
   return albums;
 }
 
 async function importPhotos(oAuth2Client) {
   try {
     const flickrAlbums = JSON.parse(readFileSync(path.join(process.env.METADATA_DIR, 'albums.json')));
-    debug(`Importing ${flickrAlbums.albums.length} Flickr albums`);
+    console.log(`Importing ${flickrAlbums.albums.length} Flickr albums`);
     const googleAlbums = await getAlbums(oAuth2Client);
 
     for (const flickrAlbum of flickrAlbums.albums) {
       console.log(`Uploading ${flickrAlbum.photos.length} photos to ${flickrAlbum.title}`);
       let googleAlbum = googleAlbums.find(album => flickrAlbum.title === album.title);
       if (!googleAlbum) {
-        debug(`Creating album for ${flickrAlbum.title}`)
+        console.log(`Creating album for ${flickrAlbum.title}`)
         const createAlbumRes = await oAuth2Client.request({
           data: { album: { title: flickrAlbum.title } },
           method: 'post',

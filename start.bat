@@ -1,1 +1,1 @@
-set DEBUG=flickrimport* & node app.js > server.log
+powershell "node app.js | tee .\server.log"
