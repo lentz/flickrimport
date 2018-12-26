@@ -58,7 +58,7 @@ async function uploadPhoto(oAuth2Client, flickrPhotoId, albumId) {
     const result = addToAlbumRes.data.newMediaItemResults[0].status;
     if (result.message !== 'OK') { throw new Error(`Upload failed for ${flickrPhotoId}: ${result}`); }
   } catch(err) {
-    console.error(`Error uploading photo ${path.basename(photoPath)}: ${err.stack}`);
+    console.error(`Error uploading photo ${flickrPhotoId}: ${err.stack}`);
   }
 }
 
