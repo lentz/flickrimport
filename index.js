@@ -1,6 +1,6 @@
 const { readFileSync } = require('fs');
 const glob = require('glob');
-const debug = require('debug')('photosupload');
+const debug = require('debug')('flickrimport');
 const path = require('path');
 const _ = require('lodash');
 require('dotenv').config();
