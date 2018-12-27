@@ -26,7 +26,7 @@ async function getItemsForAlbum(oAuth2Client, albumId) {
 async function uploadPhoto(oAuth2Client, flickrPhotoId, albumId) {
   try {
     const files = glob.sync(path.join(process.env.PHOTOS_DIR, `*${flickrPhotoId}*.jpg`));
-    if (!files.length) { 
+    if (!files.length) {
       console.log(`Photo not found with ID ${flickrPhotoId} for album ${albumId}!`);
       return;
     }
@@ -72,9 +72,15 @@ async function getAlbums(oAuth2Client) {
     albums = albums.concat(albumsRes.data.albums);
     pageToken = albumsRes.data.nextPageToken;
   } while (pageToken);
-  
+
   console.log(`Found ${albums.length} Google albums`);
   return albums;
+}
+
+function flickrAlbumPhotoCount(flickrPhotoIds) {
+  return flickrPhotoIds.filter(id => {
+    return glob.sync(path.join(process.env.PHOTOS_DIR, `*${id}*.jpg`)).length > 0;
+  }).length;
 }
 
 async function importPhotos(oAuth2Client) {
@@ -96,7 +102,7 @@ async function importPhotos(oAuth2Client) {
         googleAlbum = createAlbumRes.data;
       }
 
-      if (parseInt(googleAlbum.mediaItemsCount, 10) === flickrAlbum.photos.length) {
+      if (parseInt(googleAlbum.mediaItemsCount, 10) === flickrAlbumPhotoCount(flickrAlbum.photos)) {
         console.log(`All ${googleAlbum.mediaItemsCount} items already imported to ${googleAlbum.title}`)
       } else {
         const photoChunks = _.chunk(flickrAlbum.photos, 5);
