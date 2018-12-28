@@ -4,7 +4,7 @@ const url = require('url');
 const { OAuth2Client } = require('google-auth-library');
 require('dotenv').config();
 
-const { importPhotos } = require('./index');
+const { importPhotos } = require('./flickrimport');
 
 async function authMiddleware(req, res) {
   const qs = querystring.parse(url.parse(req.url).query);
@@ -54,5 +54,6 @@ const server = http.createServer(async (req, res) => {
     res.end(err.toString());
   }
 }).listen(process.env.PORT, () => {
-  console.log('Listening on port', process.env.PORT);
+  const pjson = require('./package.json');
+  console.log(`FlickrImport ${pjson.version} listening on port`, process.env.PORT);
 });
