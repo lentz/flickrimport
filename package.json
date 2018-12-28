@@ -1,6 +1,6 @@
 {
   "name": "photosupload",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Upload photos to Google Photos",
   "main": "app.js",
   "dependencies": {
