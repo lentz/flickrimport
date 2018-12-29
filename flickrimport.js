@@ -32,8 +32,6 @@ async function uploadPhoto(oAuth2Client, flickrPhotoId, albumId) {
     }
     const photoPath = files[0];
 
-    console.log(`Uploading ${path.basename(photoPath)}`);
-
     const uploadRes = await oAuth2Client.request({
       url: 'https://photoslibrary.googleapis.com/v1/uploads',
       maxContentLength: 262144000,
@@ -84,8 +82,8 @@ async function importPhotos(oAuth2Client) {
     console.log(`Importing ${flickrAlbums.albums.length} Flickr albums`);
     const googleAlbums = await getAlbums(oAuth2Client);
 
+    let count = 1;
     for (const flickrAlbum of flickrAlbums.albums) {
-      console.log(`Uploading ${flickrAlbum.photos.length} photos to ${flickrAlbum.title}`);
       let googleAlbum = googleAlbums.find(album => flickrAlbum.title === album.title);
       if (!googleAlbum) {
         console.log(`Creating album for ${flickrAlbum.title}`)
@@ -98,15 +96,18 @@ async function importPhotos(oAuth2Client) {
       }
 
       if (parseInt(googleAlbum.mediaItemsCount, 10) === flickrAlbum.photos.length) {
-        console.log(`All ${googleAlbum.mediaItemsCount} items already imported to ${googleAlbum.title}`)
+        console.log(`(${count}/${flickrAlbums.albums.length}) All ${googleAlbum.mediaItemsCount} items already imported to ${googleAlbum.title}`)
       } else {
+        console.log(`Uploading ${flickrAlbum.photos.length} photos to ${flickrAlbum.title}`);
         const photoChunks = _.chunk(flickrAlbum.photos, 5);
         for (const photoChunk of photoChunks) {
           await Promise.all(photoChunk.map(photoId => uploadPhoto(oAuth2Client, photoId, googleAlbum.id)));
         }
-        console.log(`Completed import for ${flickrAlbum.title}`);
+        console.log(`(${count}/${flickrAlbums.albums.length}) Completed import for ${flickrAlbum.title}`);
       }
+      count = count + 1;
     }
+    console.log('Import complete!');
   } catch (err) {
     console.log(err.stack);
   }
