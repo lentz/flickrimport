@@ -6,7 +6,7 @@
   "dependencies": {
     "dotenv": "^8.2.0",
     "glob": "^7.1.6",
-    "google-auth-library": "^5.6.1",
+    "google-auth-library": "^5.7.0",
     "lodash": "^4.17.15"
   },
   "scripts": {
