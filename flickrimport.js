@@ -7,7 +7,9 @@ require('dotenv').config();
 const albumItemCache = {};
 
 async function getItemsForAlbum(oAuth2Client, albumId) {
-  if (albumItemCache[albumId]) { return albumItemCache[albumId]; }
+  if (albumItemCache[albumId]) {
+    return albumItemCache[albumId];
+  }
 
   let pageToken;
   do {
@@ -17,17 +19,23 @@ async function getItemsForAlbum(oAuth2Client, albumId) {
       url: 'https://photoslibrary.googleapis.com/v1/mediaItems:search',
     });
     pageToken = albumContentsRes.data.nextPageToken;
-    albumItemCache[albumId] = (albumItemCache[albumId] || []).concat(albumContentsRes.data.mediaItems);
-  } while(pageToken);
+    albumItemCache[albumId] = (albumItemCache[albumId] || []).concat(
+      albumContentsRes.data.mediaItems,
+    );
+  } while (pageToken);
 
   return albumItemCache[albumId];
 }
 
 async function uploadPhoto(oAuth2Client, flickrPhotoId, albumId) {
   try {
-    const files = glob.sync(path.join(process.env.PHOTOS_DIR, `*${flickrPhotoId}*`));
+    const files = glob.sync(
+      path.join(process.env.PHOTOS_DIR, `*${flickrPhotoId}*`),
+    );
     if (!files.length) {
-      console.log(`Photo not found with ID ${flickrPhotoId} for album ${albumId}!`);
+      console.log(
+        `Photo not found with ID ${flickrPhotoId} for album ${albumId}!`,
+      );
       return;
     }
     const photoPath = files[0];
@@ -54,8 +62,10 @@ async function uploadPhoto(oAuth2Client, flickrPhotoId, albumId) {
     });
 
     const result = addToAlbumRes.data.newMediaItemResults[0].status;
-    if (result.message !== 'OK') { throw new Error(`Upload failed for ${flickrPhotoId}: ${result}`); }
-  } catch(err) {
+    if (result.message !== 'OK') {
+      throw new Error(`Upload failed for ${flickrPhotoId}: ${result}`);
+    }
+  } catch (err) {
     console.error(`Error uploading photo ${flickrPhotoId}: ${err.stack}`);
   }
 }
@@ -78,15 +88,19 @@ async function getAlbums(oAuth2Client) {
 
 async function importPhotos(oAuth2Client) {
   try {
-    const flickrAlbums = JSON.parse(readFileSync(path.join(process.env.METADATA_DIR, 'albums.json')));
+    const flickrAlbums = JSON.parse(
+      readFileSync(path.join(process.env.METADATA_DIR, 'albums.json')),
+    );
     console.log(`Importing ${flickrAlbums.albums.length} Flickr albums`);
     const googleAlbums = await getAlbums(oAuth2Client);
 
     let count = 1;
     for (const flickrAlbum of flickrAlbums.albums) {
-      let googleAlbum = googleAlbums.find(album => flickrAlbum.title === album.title);
+      let googleAlbum = googleAlbums.find(
+        (album) => flickrAlbum.title === album.title,
+      );
       if (!googleAlbum) {
-        console.log(`Creating album for ${flickrAlbum.title}`)
+        console.log(`Creating album for ${flickrAlbum.title}`);
         const createAlbumRes = await oAuth2Client.request({
           data: { album: { title: flickrAlbum.title } },
           method: 'post',
@@ -95,15 +109,27 @@ async function importPhotos(oAuth2Client) {
         googleAlbum = createAlbumRes.data;
       }
 
-      if (parseInt(googleAlbum.mediaItemsCount, 10) === flickrAlbum.photos.length) {
-        console.log(`(${count}/${flickrAlbums.albums.length}) All ${googleAlbum.mediaItemsCount} items already imported to ${googleAlbum.title}`)
+      if (
+        parseInt(googleAlbum.mediaItemsCount, 10) === flickrAlbum.photos.length
+      ) {
+        console.log(
+          `(${count}/${flickrAlbums.albums.length}) All ${googleAlbum.mediaItemsCount} items already imported to ${googleAlbum.title}`,
+        );
       } else {
-        console.log(`Uploading ${flickrAlbum.photos.length} photos to ${flickrAlbum.title}`);
+        console.log(
+          `Uploading ${flickrAlbum.photos.length} photos to ${flickrAlbum.title}`,
+        );
         const photoChunks = _.chunk(flickrAlbum.photos, 5);
         for (const photoChunk of photoChunks) {
-          await Promise.all(photoChunk.map(photoId => uploadPhoto(oAuth2Client, photoId, googleAlbum.id)));
+          await Promise.all(
+            photoChunk.map((photoId) =>
+              uploadPhoto(oAuth2Client, photoId, googleAlbum.id),
+            ),
+          );
         }
-        console.log(`(${count}/${flickrAlbums.albums.length}) Completed import for ${flickrAlbum.title}`);
+        console.log(
+          `(${count}/${flickrAlbums.albums.length}) Completed import for ${flickrAlbum.title}`,
+        );
       }
       count = count + 1;
     }
@@ -114,5 +140,6 @@ async function importPhotos(oAuth2Client) {
 }
 
 module.exports = {
+  getItemsForAlbum,
   importPhotos,
 };

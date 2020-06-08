@@ -18,11 +18,13 @@ async function authMiddleware(req, res) {
     const tokens = JSON.parse(req.headers.cookie.split('=')[1]);
     oAuth2Client.setCredentials(tokens);
   } else if (qs.code) {
-    const tokensResp = await oAuth2Client.getToken(qs.code)
+    const tokensResp = await oAuth2Client.getToken(qs.code);
     oAuth2Client.setCredentials(tokensResp.tokens);
     res.setHeader(
       'Set-Cookie',
-      `token=${JSON.stringify(tokensResp.tokens)}; Max-Age=2147483647;  HttpOnly`,
+      `token=${JSON.stringify(
+        tokensResp.tokens,
+      )}; Max-Age=2147483647;  HttpOnly`,
     );
   } else {
     const authorizeUrl = oAuth2Client.generateAuthUrl({
@@ -38,22 +40,26 @@ async function authMiddleware(req, res) {
   importPhotos(oAuth2Client);
 }
 
-const server = http.createServer(async (req, res) => {
-  try {
-    const parsedUrl = url.parse(req.url);
-    await authMiddleware(req, res);
-    if (parsedUrl.pathname === '/' && !res.finished) {
-      res.end('Beginning import');
+http
+  .createServer(async (req, res) => {
+    try {
+      const parsedUrl = url.parse(req.url);
+      await authMiddleware(req, res);
+      if (parsedUrl.pathname === '/' && !res.finished) {
+        res.end('Beginning import');
+      } else {
+        res.statusCode = 404;
+        res.end();
+      }
+    } catch (err) {
+      res.statusCode = 500;
+      res.end(err.toString());
     }
-    else {
-      res.statusCode = 404;
-      res.end();
-    }
-  } catch (err) {
-    res.statusCode = 500;
-    res.end(err.toString());
-  }
-}).listen(process.env.PORT, () => {
-  const pjson = require('./package.json');
-  console.log(`FlickrImport ${pjson.version} listening on port`, process.env.PORT);
-});
+  })
+  .listen(process.env.PORT, () => {
+    const pjson = require('./package.json');
+    console.log(
+      `FlickrImport ${pjson.version} listening on port`,
+      process.env.PORT,
+    );
+  });
