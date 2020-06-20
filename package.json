@@ -24,7 +24,7 @@
     "*.{js,json,md,yml}": "prettier --write"
   },
   "devDependencies": {
-    "eslint": "^7.2.0",
+    "eslint": "^7.3.0",
     "lint-staged": "^10.2.11",
     "pre-commit": "^1.2.2",
     "prettier": "^2.0.5"
