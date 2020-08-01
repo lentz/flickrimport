@@ -13,7 +13,7 @@
   "dependencies": {
     "dotenv": "^8.2.0",
     "glob": "^7.1.6",
-    "google-auth-library": "^6.0.5",
+    "google-auth-library": "^6.0.6",
     "lodash": "^4.17.19"
   },
   "pre-commit": [
