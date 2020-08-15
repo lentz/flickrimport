@@ -14,7 +14,7 @@
     "dotenv": "^8.2.0",
     "glob": "^7.1.6",
     "google-auth-library": "^6.0.6",
-    "lodash": "^4.17.19"
+    "lodash": "^4.17.20"
   },
   "pre-commit": [
     "lint-staged"
